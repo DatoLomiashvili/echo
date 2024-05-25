@@ -8,6 +8,7 @@
         <ul>
             <li v-for="task in tasks" :key="task.id">
                 {{ task.body }}
+                <button @click="deleteTask(task.id)" class="delete-button">Delete</button>
             </li>
         </ul>
     </div>
@@ -27,8 +28,13 @@ export default {
         this.getTasks();
 
         window.Echo.channel('tasks').listen('TaskCreated', e => {
-            this.tasks.unshift(e.task)
-        })
+            this.tasks.unshift(e.task);
+        });
+
+        window.Echo.channel('tasks').listen('TaskDeleted', e => {
+            console.log(e.task)
+            this.tasks = this.tasks.filter(task => task.id !== e.task.id);
+        });
     },
     methods: {
         async getTasks() {
@@ -41,6 +47,11 @@ export default {
             this.tasks.unshift(response.data);
             this.newTask = '';
         },
+        async deleteTask(taskId) {
+            if (!confirm('Are you sure you want to delete this task?')) return;
+            await axios.delete(`/tasks/${taskId}`);
+            this.tasks = this.tasks.filter(task => task.id !== taskId)
+        }
     },
 };
 </script>
@@ -85,5 +96,16 @@ export default {
 .task-list li {
     padding: 0.5rem;
     border-bottom: 1px solid #ddd;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.delete-button {
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
 }
 </style>

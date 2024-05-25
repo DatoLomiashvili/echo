@@ -1,6 +1,7 @@
 <?php
 
 use App\Events\TaskCreated;
+use App\Events\TaskDeleted;
 use App\Models\Task;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -39,4 +40,10 @@ Route::post('tasks', function (Request $request) {
     return response()->json($task, 201);
 });
 
+Route::delete('tasks/{id}', function ($id) {
+    $task = Task::find($id);
+    TaskDeleted::dispatch($task);
+    $task->delete();
 
+    return response()->json(['success' => true]);
+});
