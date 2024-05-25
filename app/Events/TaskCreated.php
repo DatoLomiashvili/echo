@@ -10,16 +10,18 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class OrderStatusUpdated implements ShouldBroadcast
+class TaskCreated implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
-    public $order;
+
+    public $task;
     /**
      * Create a new event instance.
      */
-    public function __construct($order)
+    public function __construct($task)
     {
-        $this->order = $order;
+        $this->task = $task;
+        $this->dontBroadcastToCurrentUser();
     }
 
     /**
@@ -30,10 +32,7 @@ class OrderStatusUpdated implements ShouldBroadcast
     public function broadcastOn(): array
     {
         return [
-            new Channel('orders'),
+            new Channel('tasks'),
         ];
-//        return [
-//            new PrivateChannel('channel-name'),
-//        ];
     }
 }

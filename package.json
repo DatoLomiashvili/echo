@@ -9,9 +9,12 @@
     "devDependencies": {
         "axios": "^1.6.4",
         "laravel-vite-plugin": "^1.0.0",
-        "vite": "^5.0.0"
+        "vite": "^5.0.0",
+        "webpack": "^5.91.0",
+        "webpack-cli": "^5.1.4"
     },
     "dependencies": {
+        "@vitejs/plugin-vue": "^5.0.4",
         "laravel-echo": "^1.16.1",
         "npm-watch": "^0.13.0",
         "pusher-js": "^8.4.0-rc2"
