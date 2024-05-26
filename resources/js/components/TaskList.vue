@@ -2,9 +2,12 @@
     <div class="task-list">
         <h1>{{ this.project.title }}</h1>
         <form @submit.prevent="addTask">
-            <input v-model="newTask" placeholder="Enter task" required />
+            <div>
+                <input v-model="newTask" placeholder="Enter task" @keydown="tapParticipants" required/>
+            </div>
             <button type="submit">Add Task</button>
         </form>
+        <span v-if="activeParticipant" v-text="activeParticipant.name + ' is typing...'"></span>
         <ul>
             <li v-for="task in tasks" :key="task.id">
                 {{ task.body }}
@@ -23,29 +26,60 @@ export default {
         return {
             newTask: '',
             tasks: [],
+            activeParticipant: false,
+            typingTimer: false,
         };
     },
+
+    computed: {
+        channel() {
+            return window.Echo.private(`tasks.${this.project.id}`);
+        }
+    },
+
     created() {
         this.getTasks();
 
-        window.Echo.private(`tasks.${this.project.id}`).listen('TaskCreated', e => {
+        this.channel.listen('TaskCreated', e => {
             this.tasks.unshift(e.task);
+        }).listenForWhisper("typing", this.flashActiveParticipant)
+            .listenForWhisper("stoppedTyping", e => {
+            this.activeParticipant = false;
         });
 
-        window.Echo.private(`tasks.${this.project.id}`).listen('TaskDeleted', e => {
+        this.channel.listen('TaskDeleted', e => {
             this.tasks = this.tasks.filter(task => task.id !== e.task.id);
         });
+
     },
+
+
     methods: {
+        flashActiveParticipant(e) {
+            this.activeParticipant = e;
+
+            if (this.typingTimer) {
+                clearTimeout(this.typingTimer);
+            }
+
+            this.typingTimer = setTimeout(() => this.activeParticipant = false, 3000)
+        },
+        tapParticipants() {
+            this.channel.whisper('typing', {
+                    name: window.App.user.name,
+                });
+        },
+
         async getTasks() {
             const response = await axios.get(`/api/projects/${this.project.id}`);
             this.tasks = response.data;
         },
         async addTask() {
-            if (this.newTask.trim() === '') return;
             const response = await axios.post(`/api/projects/${this.project.id}/tasks`, { body: this.newTask });
             this.tasks.unshift(response.data);
             this.newTask = '';
+
+            this.channel.whisper('stoppedTyping', {});
         },
         async deleteTask(taskId) {
             if (!confirm('Are you sure you want to delete this task?')) return;

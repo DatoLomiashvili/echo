@@ -6,6 +6,9 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>Laravel Vue Task List</title>
+    <script>
+        window.App = <?= json_encode(['user' => auth()->user()]) ?>
+    </script>
     @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/sass/app.scss'])
 </head>
 <body>
