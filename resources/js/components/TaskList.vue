@@ -1,6 +1,6 @@
 <template>
     <div class="task-list">
-        <h1>Task List</h1>
+        <h1>{{ this.project.title }}</h1>
         <form @submit.prevent="addTask">
             <input v-model="newTask" placeholder="Enter task" required />
             <button type="submit">Add Task</button>
@@ -18,6 +18,7 @@
 import axios from 'axios';
 
 export default {
+    props: ['project'],
     data() {
         return {
             newTask: '',
@@ -27,29 +28,29 @@ export default {
     created() {
         this.getTasks();
 
-        window.Echo.channel('tasks').listen('TaskCreated', e => {
+        window.Echo.channel(`tasks.${this.project.id}`).listen('TaskCreated', e => {
             this.tasks.unshift(e.task);
         });
 
-        window.Echo.channel('tasks').listen('TaskDeleted', e => {
+        window.Echo.channel(`tasks.${this.project.id}`).listen('TaskDeleted', e => {
             console.log(e.task)
             this.tasks = this.tasks.filter(task => task.id !== e.task.id);
         });
     },
     methods: {
         async getTasks() {
-            const response = await axios.get('/tasks');
+            const response = await axios.get(`/api/projects/${this.project.id}`);
             this.tasks = response.data;
         },
         async addTask() {
             if (this.newTask.trim() === '') return;
-            const response = await axios.post('/tasks', { body: this.newTask });
+            const response = await axios.post(`/api/projects/${this.project.id}/tasks`, { body: this.newTask });
             this.tasks.unshift(response.data);
             this.newTask = '';
         },
         async deleteTask(taskId) {
             if (!confirm('Are you sure you want to delete this task?')) return;
-            await axios.delete(`/tasks/${taskId}`);
+            await axios.delete(`/api/projects/tasks/${taskId}`);
             this.tasks = this.tasks.filter(task => task.id !== taskId)
         }
     },
