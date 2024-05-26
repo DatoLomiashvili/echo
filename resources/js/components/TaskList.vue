@@ -28,11 +28,11 @@ export default {
     created() {
         this.getTasks();
 
-        window.Echo.channel(`tasks.${this.project.id}`).listen('TaskCreated', e => {
+        window.Echo.private(`tasks.${this.project.id}`).listen('TaskCreated', e => {
             this.tasks.unshift(e.task);
         });
 
-        window.Echo.channel(`tasks.${this.project.id}`).listen('TaskDeleted', e => {
+        window.Echo.private(`tasks.${this.project.id}`).listen('TaskDeleted', e => {
             this.tasks = this.tasks.filter(task => task.id !== e.task.id);
         });
     },
