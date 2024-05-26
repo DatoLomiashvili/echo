@@ -45,3 +45,7 @@ Route::delete('/api/projects/tasks/{id}', function ($id) {
 
     return response()->json(['success' => true]);
 });
+
+Auth::routes();
+
+Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');

@@ -33,7 +33,6 @@ export default {
         });
 
         window.Echo.channel(`tasks.${this.project.id}`).listen('TaskDeleted', e => {
-            console.log(e.task)
             this.tasks = this.tasks.filter(task => task.id !== e.task.id);
         });
     },
