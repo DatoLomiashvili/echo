@@ -15,6 +15,14 @@
             </li>
         </ul>
     </div>
+    <div class="active-members">
+        <h2>Active Members</h2>
+        <ul>
+            <li v-for="participant in participants">
+                {{ participant.name }}
+            </li>
+        </ul>
+    </div>
 </template>
 
 <script>
@@ -28,21 +36,33 @@ export default {
             tasks: [],
             activeParticipant: false,
             typingTimer: false,
+            participants: [],
         };
     },
 
     computed: {
         channel() {
-            return window.Echo.private(`tasks.${this.project.id}`);
+            return window.Echo.join(`tasks.${this.project.id}`);
         }
     },
 
     created() {
         this.getTasks();
 
-        this.channel.listen('TaskCreated', e => {
+        this.channel
+            .here(participants => {
+                this.participants = participants
+            })
+            .joining(participant => {
+                this.participants.push(participant)
+            })
+            .leaving(participant => {
+                this.participants.splice(this.participants.indexOf(participant), 1)
+            })
+            .listen('TaskCreated', e => {
             this.tasks.unshift(e.task);
-        }).listenForWhisper("typing", this.flashActiveParticipant)
+        })
+            .listenForWhisper("typing", this.flashActiveParticipant)
             .listenForWhisper("stoppedTyping", e => {
             this.activeParticipant = false;
         });
@@ -142,4 +162,30 @@ export default {
     cursor: pointer;
     padding: 0.25rem 0.5rem;
 }
+
+.active-members {
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 1rem;
+    background: #f1f1f1;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.active-members h2 {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.active-members ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.active-members li {
+    padding: 0.5rem;
+    border-bottom: 1px solid #ddd;
+}
+
 </style>
