@@ -1,10 +1,6 @@
 <?php
 
-use App\Events\TaskCreated;
-use App\Events\TaskDeleted;
-use App\Models\Project;
-use App\Models\Task;
-use Illuminate\Http\Request;
+use App\Http\Controllers\ProjectsController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -22,29 +18,13 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/projects/{project}', function (Project $project){
-    $project->load('tasks');
+Route::get('/projects/{project}', [ProjectsController::class, 'index']);
 
-    return view('projects.show', compact('project'));
-});
+Route::get('/api/projects/{project}', [ProjectsController::class, 'fetchTasks']);
 
-Route::get('/api/projects/{project}', function (Project $project) {
-    return $project->tasks;
-});
+Route::post('/api/projects/{project}/tasks', [ProjectsController::class, 'create']);
 
-Route::post('/api/projects/{project}/tasks', function (Project $project) {
-    $task = $project->tasks()->create(['body' => request()->get('body')]);
-    TaskCreated::dispatch($task);
-    return response()->json($task, 201);
-});
-
-Route::delete('/api/projects/tasks/{id}', function ($id) {
-    $task = Task::find($id);
-    TaskDeleted::dispatch($task);
-    $task->delete();
-
-    return response()->json(['success' => true]);
-});
+Route::delete('/api/projects/tasks/{id}', [ProjectsController::class, 'delete']);
 
 Auth::routes();
 
