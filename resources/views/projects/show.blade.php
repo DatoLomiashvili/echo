@@ -65,7 +65,8 @@
         </div>
     </div>
 </nav>
-<div id="app">
+<div id="app" class="app-container">
+{{--    <webcam-component></webcam-component>--}}
     <task-list :project="{{ $project }}"></task-list>
 </div>
 </body>

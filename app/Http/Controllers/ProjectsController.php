@@ -39,13 +39,22 @@ class ProjectsController extends Controller
 
     /**
      * @param Project $project
+     * @param Request $request
      * @return JsonResponse
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
      */
-    public function create(Project $project): JsonResponse
+    public function create(Project $project, Request $request): JsonResponse
     {
-        $task = $project->tasks()->create(['body' => request()->get('body')]);
+        if (!auth()->user()){
+            return response()->json(['msg' => 'The User Is Not Authenticated'], 403);
+        } elseif (!$project->participants->contains(auth()->user())) {
+            return response()->json(['msg' => 'The User Is Not Allowed'], 405);
+        }
+
+        $validatedData = $request->validate([
+            'body' => 'required|string',
+        ]);
+
+        $task = $project->tasks()->create(['body' => $validatedData['body']]);
         TaskCreated::dispatch($task);
         return response()->json($task, 201);
     }
@@ -57,6 +66,12 @@ class ProjectsController extends Controller
     public function delete($id): JsonResponse
     {
         $task = Task::find($id);
+        if (!auth()->user()){
+            return response()->json(['msg' => 'The User Is Not Authenticated'], 403);
+        } elseif (!$task->project->participants->contains(auth()->user())) {
+            return response()->json(['msg' => 'The User Is Not Allowed'], 405);
+        }
+
         TaskDeleted::dispatch($task);
         $task->delete();
 

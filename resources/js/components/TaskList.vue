@@ -14,6 +14,7 @@
                 <button @click="deleteTask(task.id)" class="delete-button">Delete</button>
             </li>
         </ul>
+        <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
     </div>
     <div class="active-members">
         <h2>Active Members</h2>
@@ -37,6 +38,7 @@ export default {
             activeParticipant: false,
             typingTimer: false,
             participants: [],
+            errorMessage: '',
         };
     },
 
@@ -60,12 +62,12 @@ export default {
                 this.participants.splice(this.participants.indexOf(participant), 1)
             })
             .listen('TaskCreated', e => {
-            this.tasks.unshift(e.task);
-        })
+                this.tasks.unshift(e.task);
+            })
             .listenForWhisper("typing", this.flashActiveParticipant)
             .listenForWhisper("stoppedTyping", e => {
-            this.activeParticipant = false;
-        });
+                this.activeParticipant = false;
+            });
 
         this.channel.listen('TaskDeleted', e => {
             this.tasks = this.tasks.filter(task => task.id !== e.task.id);
@@ -85,9 +87,12 @@ export default {
             this.typingTimer = setTimeout(() => this.activeParticipant = false, 3000)
         },
         tapParticipants() {
-            this.channel.whisper('typing', {
+            if (window.App.user) {
+                this.channel.whisper('typing', {
                     name: window.App.user.name,
                 });
+            }
+
         },
 
         async getTasks() {
@@ -95,16 +100,38 @@ export default {
             this.tasks = response.data;
         },
         async addTask() {
-            const response = await axios.post(`/api/projects/${this.project.id}/tasks`, { body: this.newTask });
-            this.tasks.unshift(response.data);
-            this.newTask = '';
+            try{
+                const response = await axios.post(`/api/projects/${this.project.id}/tasks`, { body: this.newTask });
+                this.tasks.unshift(response.data);
+                this.newTask = '';
 
-            this.channel.whisper('stoppedTyping', {});
+                this.channel.whisper('stoppedTyping', {});
+            } catch (error) {
+                if (error.response.data.msg) {
+                    this.errorMessage = error.response.data.msg;
+                } else {
+
+                    this.errorMessage = 'An error occurred while creating the task.';
+                }
+                setTimeout(() => this.errorMessage = '', 3000);
+
+                this.newTask = '';
+            }
+
         },
         async deleteTask(taskId) {
             if (!confirm('Are you sure you want to delete this task?')) return;
-            await axios.delete(`/api/projects/tasks/${taskId}`);
-            this.tasks = this.tasks.filter(task => task.id !== taskId)
+            try{
+                await axios.delete(`/api/projects/tasks/${taskId}`);
+                this.tasks = this.tasks.filter(task => task.id !== taskId)
+            } catch (error) {
+                if (error.response.data.msg) {
+                    this.errorMessage = error.response.data.msg;
+                } else {
+                    this.errorMessage = 'An error occurred while deleting the task.';
+                }
+                setTimeout(() => this.errorMessage = '', 3000);
+            }
         }
     },
 };
@@ -186,6 +213,18 @@ export default {
 .active-members li {
     padding: 0.5rem;
     border-bottom: 1px solid #ddd;
+}
+
+.task-list-container {
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    max-width: 600px;
+    margin: 20px auto;
+}
+
+h2 {
+    text-align: center;
 }
 
 </style>
