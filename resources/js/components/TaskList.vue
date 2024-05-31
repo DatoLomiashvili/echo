@@ -70,7 +70,7 @@ export default {
             });
 
         this.channel.listen('TaskDeleted', e => {
-            this.tasks = this.tasks.filter(task => task.id !== e.task.id);
+            this.tasks = this.tasks.filter(task => task.id !== e.taskId);
         });
 
     },

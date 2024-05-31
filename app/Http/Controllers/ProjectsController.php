@@ -4,26 +4,47 @@ namespace App\Http\Controllers;
 
 use App\Events\TaskCreated;
 use App\Events\TaskDeleted;
+use App\Facades\Reader;
+use App\Jobs\Deploy;
+use App\Jobs\ProcessPayment;
+use App\Jobs\RegisterUser;
+use App\Jobs\SendEmail;
 use App\Models\Project;
 use App\Models\Task;
+use App\Models\User;
+use DeepCopy\DeepCopy;
+use Illuminate\Auth\Access\Response;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\NotFoundExceptionInterface;
+use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Throwable;
+use function DeepCopy\deep_copy;
 
 class ProjectsController extends Controller
 {
 
     /**
      * @param Project $project
-     * @return \Illuminate\Contracts\Foundation\Application|Factory|View|Application
+     * @return Application|View|Factory|\Illuminate\Contracts\Foundation\Application
+     * @throws Throwable
      */
     public function index(Project $project): Application|View|Factory|\Illuminate\Contracts\Foundation\Application
     {
         $project->load('tasks');
+//        $batch = [
+//            new RegisterUser(),
+//            new ProcessPayment(),
+//            new SendEmail(15),
+//        ];
+//
+//        Bus::batch($batch)->allowFailures()->onQueue('auth')->dispatch();
 
         return view('projects.show', compact('project'));
     }
@@ -71,8 +92,7 @@ class ProjectsController extends Controller
         } elseif (!$task->project->participants->contains(auth()->user())) {
             return response()->json(['msg' => 'The User Is Not Allowed'], 405);
         }
-
-        TaskDeleted::dispatch($task);
+        TaskDeleted::dispatch($task->project->id, $task->id);
         $task->delete();
 
         return response()->json(['success' => true]);

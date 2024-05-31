@@ -203,7 +203,6 @@ return [
                 'balanceCooldown' => 3,
             ],
         ],
-
         'local' => [
             'supervisor-1' => [
                 'maxProcesses' => 3,

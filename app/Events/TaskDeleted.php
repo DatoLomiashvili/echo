@@ -12,13 +12,15 @@ class TaskDeleted implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $task;
+    public $projectId;
+    public $taskId;
     /**
      * Create a new event instance.
      */
-    public function __construct($task)
+    public function __construct($projectId, $taskId)
     {
-        $this->task = $task;
+        $this->projectId = $projectId;
+        $this->taskId = $taskId;
 
         $this->dontBroadcastToCurrentUser();
     }
@@ -31,7 +33,7 @@ class TaskDeleted implements ShouldBroadcast
     public function broadcastOn(): array
     {
         return [
-            new PresenceChannel('tasks.' . $this->task->project_id),
+            new PresenceChannel('tasks.' . $this->projectId),
         ];
     }
 }
