@@ -11,7 +11,7 @@ class Project extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name'];
+    protected $fillable = ['title'];
 
 
     /**
@@ -19,7 +19,8 @@ class Project extends Model
      */
     public function tasks(): HasMany
     {
-        return $this->hasMany(Task::class, 'project_id', 'id')->orderBy('created_at', 'desc');
+        return $this->hasMany(Task::class, 'project_id', 'id')
+            ->orderBy('created_at', 'desc');
     }
 
     /**

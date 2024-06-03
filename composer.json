@@ -15,6 +15,7 @@
         "laravel/telescope": "^5.0",
         "laravel/tinker": "^2.8",
         "laravel/ui": "^4.5",
+        "lorisleiva/laravel-actions": "^2.8",
         "predis/predis": "^2.2",
         "pusher/pusher-php-server": "^7.2",
         "spatie/laravel-ray": "^1.36"

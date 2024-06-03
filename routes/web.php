@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\CreateNewProject;
 use App\Http\Controllers\ProjectsController;
 use Illuminate\Support\Facades\Route;
 
@@ -25,6 +26,8 @@ Route::get('/api/projects/{project}', [ProjectsController::class, 'fetchTasks'])
 Route::post('/api/projects/{project}/tasks', [ProjectsController::class, 'create']);
 
 Route::delete('/api/projects/tasks/{id}', [ProjectsController::class, 'delete']);
+
+Route::post('/projects/create', CreateNewProject::class)->middleware('auth');
 
 Auth::routes();
 

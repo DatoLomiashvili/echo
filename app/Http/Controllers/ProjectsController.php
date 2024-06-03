@@ -4,26 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Events\TaskCreated;
 use App\Events\TaskDeleted;
-use App\Facades\Reader;
-use App\Jobs\Deploy;
-use App\Jobs\ProcessPayment;
-use App\Jobs\RegisterUser;
-use App\Jobs\SendEmail;
 use App\Models\Project;
 use App\Models\Task;
-use App\Models\User;
-use DeepCopy\DeepCopy;
-use Illuminate\Auth\Access\Response;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Bus;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 use Throwable;
 use function DeepCopy\deep_copy;
 
