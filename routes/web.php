@@ -2,6 +2,7 @@
 
 use App\Actions\CreateNewProject;
 use App\Http\Controllers\ProjectsController;
+use App\Http\Controllers\UploadController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -20,6 +21,10 @@ Route::get('/', function () {
 });
 
 Route::get('/projects/{project}', [ProjectsController::class, 'index']);
+
+Route::get('/upload', [UploadController::class, 'index']);
+
+Route::post('/upload', [UploadController::class, 'create'])->name('upload');
 
 Route::get('/api/projects/{project}', [ProjectsController::class, 'fetchTasks']);
 

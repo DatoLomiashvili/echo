@@ -11,6 +11,9 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Spatie\MediaLibrary\Support\MediaStream;
 use Throwable;
 use function DeepCopy\deep_copy;
 
@@ -19,12 +22,20 @@ class ProjectsController extends Controller
 
     /**
      * @param Project $project
-     * @return Application|View|Factory|\Illuminate\Contracts\Foundation\Application
+     * @return MediaStream
      * @throws Throwable
      */
-    public function index(Project $project): Application|View|Factory|\Illuminate\Contracts\Foundation\Application
+    public function index(Project $project)
     {
         $project->load('tasks');
+        DB::transaction(function () use ($project){
+            $project->addMedia(storage_path('app/public/22.png'))
+                ->preservingOriginal()
+                ->toMediaCollection('images', 's3');
+        });
+
+//        return MediaStream::create('echo_images.zip')->addMedia(Media::all());
+
 //        $batch = [
 //            new RegisterUser(),
 //            new ProcessPayment(),
@@ -63,6 +74,7 @@ class ProjectsController extends Controller
         ]);
 
         $task = $project->tasks()->create(['body' => $validatedData['body']]);
+//        $task->addMedia(app_path('app/public/1.png'));
         TaskCreated::dispatch($task);
         return response()->json($task, 201);
     }
